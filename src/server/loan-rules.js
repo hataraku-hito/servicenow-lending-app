@@ -35,7 +35,14 @@ export function preventDoubleLoan(current) {
     var equipmentId = current.getValue('equipment');
 
     var equipment = new GlideRecord('x_2301476_lending_equipment');
-    if (equipment.get(equipmentId) && equipment.getValue('status') === 'maintenance') {
+    if (!equipment.get(equipmentId)) {
+        // Reject loans whose equipment reference cannot be resolved, no
+        // matter which path created them (portal, Table API, import).
+        gs.addErrorMessage('指定された備品が存在しないため、貸出できません。');
+        current.setAbortAction(true);
+        return;
+    }
+    if (equipment.getValue('status') === 'maintenance') {
         gs.addErrorMessage('この備品はメンテナンス中のため、貸出できません。');
         current.setAbortAction(true);
         return;

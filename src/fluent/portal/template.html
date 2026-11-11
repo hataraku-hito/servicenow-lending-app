@@ -47,8 +47,8 @@
         <div class="el-due" ng-if="item.state === 'lent'">返却予定：{{c.formatDue(item)}}</div>
         <div class="el-due" ng-if="item.state === 'maintenance'">現在メンテナンス中です</div>
 
-        <button type="button" class="el-btn el-btn-primary" ng-if="item.state === 'available'" ng-click="c.borrow(item)">この備品を借りる</button>
-        <button type="button" class="el-btn el-btn-return" ng-if="item.state === 'mine'" ng-click="c.returnItem(item)">返却する</button>
+        <button type="button" class="el-btn el-btn-primary" ng-if="item.state === 'available'" ng-disabled="c.busy" ng-click="c.borrow(item)">この備品を借りる</button>
+        <button type="button" class="el-btn el-btn-return" ng-if="item.state === 'mine'" ng-disabled="c.busy" ng-click="c.returnItem(item)">返却する</button>
         <button type="button" class="el-btn el-btn-disabled" ng-if="item.state === 'lent'" disabled="disabled">貸出中です</button>
         <button type="button" class="el-btn el-btn-disabled" ng-if="item.state === 'maintenance'" disabled="disabled">貸出できません</button>
       </div>

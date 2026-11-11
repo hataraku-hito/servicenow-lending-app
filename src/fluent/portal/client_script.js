@@ -75,19 +75,33 @@ api.controller = function () {
 
     // server.get does not replace c.data by itself; apply the response so
     // the card flips between borrow/return and errors show immediately.
+    // Actions are serialized with c.busy: if two requests were in flight,
+    // their responses could arrive out of order and an older snapshot
+    // would overwrite the newer one.
+    c.busy = false;
+
     function applyResult(response) {
         c.data = response.data;
+        c.busy = false;
+    }
+
+    function clearBusy() {
+        c.busy = false;
     }
 
     c.borrow = function (item) {
+        if (c.busy) return;
+        c.busy = true;
         c.server
             .get({ action: 'lend', equipment_id: item.sys_id })
-            .then(applyResult);
+            .then(applyResult, clearBusy);
     };
 
     c.returnItem = function (item) {
+        if (c.busy) return;
+        c.busy = true;
         c.server
             .get({ action: 'return', equipment_id: item.sys_id })
-            .then(applyResult);
+            .then(applyResult, clearBusy);
     };
 };
