@@ -73,11 +73,21 @@ api.controller = function () {
         );
     };
 
+    // server.get does not replace c.data by itself; apply the response so
+    // the card flips between borrow/return and errors show immediately.
+    function applyResult(response) {
+        c.data = response.data;
+    }
+
     c.borrow = function (item) {
-        c.server.get({ action: 'lend', equipment_id: item.sys_id });
+        c.server
+            .get({ action: 'lend', equipment_id: item.sys_id })
+            .then(applyResult);
     };
 
     c.returnItem = function (item) {
-        c.server.get({ action: 'return', equipment_id: item.sys_id });
+        c.server
+            .get({ action: 'return', equipment_id: item.sys_id })
+            .then(applyResult);
     };
 };

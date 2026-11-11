@@ -14,6 +14,13 @@
     loadData();
 
     function lend(equipmentId) {
+        // Reject requests for equipment that does not exist, so a crafted
+        // call cannot create a loan with an unresolvable reference.
+        var equipment = new GlideRecord(EQUIPMENT_TABLE);
+        if (!equipment.get(equipmentId)) {
+            data.error = '指定された備品が見つかりません。';
+            return;
+        }
         var loan = new GlideRecord(LOAN_TABLE);
         loan.initialize();
         loan.setValue('equipment', equipmentId);

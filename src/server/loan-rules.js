@@ -1,6 +1,8 @@
 // Business rule logic for the equipment lending app.
 // Tables: x_2301476_lending_equipment (equipment) / x_2301476_lending_loan (loans).
 // Each function is bound to a BusinessRule in src/fluent/lending.now.ts.
+// Server modules cannot use bare Glide globals; import them explicitly.
+import { GlideRecord, GlideDateTime, gs } from '@servicenow/glide'
 
 // Before insert on a loan: if the return deadline is empty, set it to
 // (lent date + the equipment's max lending days).
@@ -22,6 +24,13 @@ export function setDueDate(current) {
 
 // Before insert on a loan: block lending when the equipment is under
 // maintenance or already lent out to someone.
+// Note: a query-then-insert check cannot be fully atomic. Two inserts in
+// the same instant could both pass; strict serialization would need a
+// lock table, which is out of scope for this app. The equipment status is
+// deliberately NOT used as the guard here: it is a denormalized copy that
+// can diverge from the loan records (e.g. after a loan is deleted
+// directly), and trusting it would reject legitimate loans. The active
+// loan query below stays the single source of truth.
 export function preventDoubleLoan(current) {
     var equipmentId = current.getValue('equipment');
 
