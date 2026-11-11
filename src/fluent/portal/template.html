@@ -1,0 +1,57 @@
+<div class="el-wrap">
+  <div class="el-hero">
+    <h1>備品貸出</h1>
+    <p>借りたい備品を選んで、そのまま貸出手続きができます。返却期限もここで確認できます。</p>
+  </div>
+
+  <div class="el-alert" ng-if="c.data.error">{{c.data.error}}</div>
+
+  <div class="el-toolbar">
+    <input class="el-search" type="text" placeholder="備品名で検索…" ng-model="c.query" />
+    <button type="button" class="el-chip" ng-class="{'el-chip-active': c.isActiveChip('all')}" ng-click="c.showAll()">すべて</button>
+    <button type="button" class="el-chip" ng-class="{'el-chip-active': c.isActiveChip('available')}" ng-click="c.showAvailableOnly()">貸出可のみ</button>
+    <button type="button" class="el-chip" ng-class="{'el-chip-active': c.isActiveChip('pc')}" ng-click="c.setCat('pc')">PC・タブレット</button>
+    <button type="button" class="el-chip" ng-class="{'el-chip-active': c.isActiveChip('camera')}" ng-click="c.setCat('camera')">撮影機材</button>
+    <button type="button" class="el-chip" ng-class="{'el-chip-active': c.isActiveChip('meeting')}" ng-click="c.setCat('meeting')">会議機材</button>
+    <div class="el-stats">
+      <span class="el-dot el-dot-ok"></span>貸出可 <b>{{c.countState('available')}}点</b>
+      <span class="el-dot el-dot-busy"></span>貸出中 <b>{{c.lentCount()}}点</b>
+    </div>
+  </div>
+
+  <div class="el-grid">
+    <div class="el-card" ng-repeat="item in c.data.items" ng-if="c.matches(item)">
+      <div class="el-visual" ng-class="'el-v-' + item.color" ng-switch="item.icon">
+        <svg ng-switch-when="laptop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4.5" width="18" height="12" rx="1.5"/><path d="M2 20h20"/></svg>
+        <svg ng-switch-when="video" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 10.5 21 8v8l-5-2.5"/></svg>
+        <svg ng-switch-when="tablet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M11 17.5h2"/></svg>
+        <svg ng-switch-when="camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13.5" r="3.5"/></svg>
+        <svg ng-switch-when="headset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 13a8 8 0 0 1 16 0"/><rect x="2.5" y="13" width="4.5" height="6" rx="2"/><rect x="17" y="13" width="4.5" height="6" rx="2"/><path d="M19.5 19a3 3 0 0 1-3 3h-3"/></svg>
+        <svg ng-switch-when="battery" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>
+      </div>
+      <div class="el-body">
+        <div class="el-row1">
+          <div class="el-title">{{item.name}}</div>
+          <div class="el-badge el-badge-ok" ng-if="item.state === 'available'">貸出可</div>
+          <div class="el-badge el-badge-mine" ng-if="item.state === 'mine'">あなたが貸出中</div>
+          <div class="el-badge el-badge-busy" ng-if="item.state === 'lent'">貸出中</div>
+          <div class="el-badge el-badge-busy" ng-if="item.state === 'maintenance'">メンテナンス中</div>
+        </div>
+        <div class="el-meta">{{item.category}} ／ 保管場所：{{item.location}}</div>
+
+        <div class="el-due" ng-if="item.state === 'available'">今すぐ借りられます（最長{{item.maxDays}}日間）</div>
+        <div class="el-due" ng-class="{'el-due-warn': item.dueState !== 'ok'}" ng-if="item.state === 'mine'">
+          <span ng-if="item.dueState === 'overdue'">返却期限を過ぎています：</span>
+          <span ng-if="item.dueState !== 'overdue'">返却期限：</span>{{c.formatDue(item)}}まで
+        </div>
+        <div class="el-due" ng-if="item.state === 'lent'">返却予定：{{c.formatDue(item)}}</div>
+        <div class="el-due" ng-if="item.state === 'maintenance'">現在メンテナンス中です</div>
+
+        <button type="button" class="el-btn el-btn-primary" ng-if="item.state === 'available'" ng-disabled="c.busy" ng-click="c.borrow(item)">この備品を借りる</button>
+        <button type="button" class="el-btn el-btn-return" ng-if="item.state === 'mine'" ng-disabled="c.busy" ng-click="c.returnItem(item)">返却する</button>
+        <button type="button" class="el-btn el-btn-disabled" ng-if="item.state === 'lent'" disabled="disabled">貸出中です</button>
+        <button type="button" class="el-btn el-btn-disabled" ng-if="item.state === 'maintenance'" disabled="disabled">貸出できません</button>
+      </div>
+    </div>
+  </div>
+</div>
